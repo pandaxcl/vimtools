@@ -16,7 +16,7 @@
 :		let s:VIM[-1].text += [a:char]
 :	else
 :		if !empty(s:VIM) | call s:ReportLast() | endif
-:		let s:VIM += [{'first': a:position, 'last': a:position, 'text':[a:char], 'syntax': a:syntax}]
+:		let s:VIM += [{'first': a:position, 'last': a:position, 'text':[a:char], 'syntax': a:syntax, 'file':expand("%:p")}]
 :	endif
 :endfunction
 
