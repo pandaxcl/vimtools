@@ -11,11 +11,12 @@
 :	return tmp
 :endfunction
 
-:let [s:VIM,s:XML] = [[],[]]
+:let [s:VIM,s:XML,s:ID] = [[],{},0]
 :function! s:ReportLast()
 :	let s:VIM[-1]["text"] = join(s:VIM[-1].string,"")
+
 :	let xml = []
-:	let xml += [printf('<vim first="%d" last="%d" file="%s">', s:VIM[-1].first, s:VIM[-1].last, s:Entity(s:VIM[-1].file))]
+:	let xml += [printf('<vim first="%d" last="%d" file="%s" id="%d" parent="%d">', s:VIM[-1].first, s:VIM[-1].last, s:Entity(s:VIM[-1].file), s:VIM[-1].id, s:VIM[-1].parent)]
 :	let xml += [printf('<text>%s</text>', s:Entity(s:VIM[-1].text))]
 
 :	let xml += ['<string>']
@@ -27,9 +28,27 @@
 :	let xml += ['</syntax>']
 
 :	let xml += ['</vim>']
-:	let s:XML += [join(xml,'')]
+
+:	let parent = s:XML
+:	for v in s:VIM[-1].syntax
+:		if !has_key(parent, v) | let parent[v]={'children':[]} | endif
+:		let parent = parent[v]
+:	endfor
+:	let s:XML
 ":	call remote_send("LOG",printf("o%s\e",string(s:VIM[-1])))
-:	call remote_send("LOG",printf("o%s\e",s:XML[-1]))
+:	call remote_send("LOG",printf("o%s\e",join(xml,'')))
+:endfunction
+
+:function! s:FindParent()
+:	let i = -2
+:	while {} !=# get(s:VIM, i, {})
+:		let [C,P] = [s:VIM[-1].syntax, s:VIM[i].syntax]
+:		if len(P) < len(C) && P == C[0:len(P)-1]
+:			return s:VIM[i].id
+:		endif
+:		let i -= 1
+:	endwhile
+:	return -1
 :endfunction
 
 :function! s:AddChar(position, char, syntax, file)
@@ -38,7 +57,15 @@
 :		let s:VIM[-1].string += [a:char]
 :	else
 :		if !empty(s:VIM) | call s:ReportLast() | endif
-:		let s:VIM += [{'first': a:position, 'last': a:position, 'string':[a:char], 'syntax': a:syntax, 'file': a:file}]
+:		let s:VIM += [{}]
+:		let s:VIM[-1]['first']  = a:position
+:		let s:VIM[-1]['last']   = a:position
+:		let s:VIM[-1]['string'] = [a:char]
+:		let s:VIM[-1]['syntax'] = a:syntax
+:		let s:VIM[-1]['file']   = a:file
+:		let s:VIM[-1]['id']     = s:ID
+:		let s:VIM[-1]['parent'] = s:FindParent()
+:		let s:ID += 1
 :	endif
 :endfunction
 
