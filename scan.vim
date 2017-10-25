@@ -13,14 +13,14 @@
 
 :let [s:VIM,s:XML] = [[],[]]
 :function! s:ReportLast()
-:	let s:VIM[-1]["string"] = join(s:VIM[-1].text,"")
+:	let s:VIM[-1]["text"] = join(s:VIM[-1].string,"")
 :	let xml = []
 :	let xml += [printf('<vim first="%d" last="%d" file="%s">', s:VIM[-1].first, s:VIM[-1].last, s:Entity(s:VIM[-1].file))]
-:	let xml += [printf('<string>%s</string>', s:Entity(s:VIM[-1].string))]
+:	let xml += [printf('<text>%s</text>', s:Entity(s:VIM[-1].text))]
 
-:	let xml += ['<text>']
-:	for v in s:VIM[-1].text | let xml += [printf('<char>%s</char>', s:Entity(v))] | endfor
-:	let xml += ['</text>']
+:	let xml += ['<string>']
+:	for v in s:VIM[-1].string | let xml += [printf('<char>%s</char>', s:Entity(v))] | endfor
+:	let xml += ['</string>']
 
 :	let xml += ['<syntax>']
 :	for v in s:VIM[-1].syntax | let xml += [printf('<name>%s</name>', v)] | endfor
@@ -34,11 +34,11 @@
 
 :function! s:AddChar(position, char, syntax, file)
 :	if !empty(s:VIM) && s:VIM[-1].last+1 == a:position && s:VIM[-1].file == a:file && s:VIM[-1].syntax == a:syntax
-:		let s:VIM[-1].last = a:position
-:		let s:VIM[-1].text += [a:char]
+:		let s:VIM[-1].last    = a:position
+:		let s:VIM[-1].string += [a:char]
 :	else
 :		if !empty(s:VIM) | call s:ReportLast() | endif
-:		let s:VIM += [{'first': a:position, 'last': a:position, 'text':[a:char], 'syntax': a:syntax, 'file': a:file}]
+:		let s:VIM += [{'first': a:position, 'last': a:position, 'string':[a:char], 'syntax': a:syntax, 'file': a:file}]
 :	endif
 :endfunction
 
