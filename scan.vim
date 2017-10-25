@@ -14,27 +14,16 @@
 :let [s:VIM,s:XML,s:ID] = [[],{},0]
 :function! s:ReportLast()
 :	let s:VIM[-1]["text"] = join(s:VIM[-1].string,"")
-
 :	let xml = []
 :	let xml += [printf('<vim first="%d" last="%d" file="%s" id="%d" parent="%d">', s:VIM[-1].first, s:VIM[-1].last, s:Entity(s:VIM[-1].file), s:VIM[-1].id, s:VIM[-1].parent)]
 :	let xml += [printf('<text>%s</text>', s:Entity(s:VIM[-1].text))]
-
 :	let xml += ['<string>']
 :	for v in s:VIM[-1].string | let xml += [printf('<char>%s</char>', s:Entity(v))] | endfor
 :	let xml += ['</string>']
-
 :	let xml += ['<syntax>']
 :	for v in s:VIM[-1].syntax | let xml += [printf('<name>%s</name>', v)] | endfor
 :	let xml += ['</syntax>']
-
 :	let xml += ['</vim>']
-
-:	let parent = s:XML
-:	for v in s:VIM[-1].syntax
-:		if !has_key(parent, v) | let parent[v]={'children':[]} | endif
-:		let parent = parent[v]
-:	endfor
-:	let s:XML
 ":	call remote_send("LOG",printf("o%s\e",string(s:VIM[-1])))
 :	call remote_send("LOG",printf("o%s\e",join(xml,'')))
 :endfunction
