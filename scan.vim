@@ -1,9 +1,9 @@
 ":let g:VimToolsScanOptions = {'output':"\(xml\|vim\)", 'parent':[]}
-:let g:VimToolsScanOptions = {'output':'xml', 'parent':[]}
-:let g:VimToolsScanOptions['parent'] = [
-\	['_xClassName_', '_xPropertyType_', '_xPropertyName_'],
-\	['_xClassName_', '_xFunctionReturn_', '_xFunctionName_', '_xFunctionArgType_', '_xFunctionArgName_', '_xFunctionArgDefault_'],
-\]
+":let g:VimToolsScanOptions = {'output':'xml', 'parent':[]}
+":let g:VimToolsScanOptions['parent'] = [
+"\	['xClassName', 'xPropertyType', 'xPropertyName'],
+"\	['xClassName', 'xFunctionReturn', 'xFunctionName', 'xFunctionArgType', 'xFunctionArgName', 'xFunctionArgDefault'],
+"\]
 
 :if 0 == count(serverlist(),"LOG")
 :	!mvim --servername LOG
