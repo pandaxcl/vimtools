@@ -1,9 +1,12 @@
-":let g:VimToolsScanOptions = {'output':"\(xml\|vim\)", 'parent':[]}
-":let g:VimToolsScanOptions = {'output':'xml', 'parent':[]}
-":let g:VimToolsScanOptions['parent'] = [
-"\	['xClassName', 'xPropertyType', 'xPropertyName'],
-"\	['xClassName', 'xFunctionReturn', 'xFunctionName', 'xFunctionArgType', 'xFunctionArgName', 'xFunctionArgDefault'],
-"\]
+:if !exists("g:VimToolsScanOption_Output")
+:	let g:VimToolsScanOption_Output = 'xml'  " \(xml\|vim\)
+:endif
+:if !exists("g:VimToolsScanOption_Relation")
+:	let g:VimToolsScanOption_Relation = [
+\		['xClassName', 'xPropertyType', 'xPropertyName'],
+\		['xClassName', 'xFunctionReturn', 'xFunctionName', 'xFunctionArgType', 'xFunctionArgName', 'xFunctionArgDefault'],
+\	]
+:endif
 
 :if 0 == count(serverlist(),"LOG")
 :	!mvim --servername LOG
@@ -31,9 +34,9 @@
 :	for v in s:VIM[-1].syntax | let xml += [printf('<name>%s</name>', v)] | endfor
 :	let xml += ['</syntax>']
 :	let xml += ['</vim>']
-:	if g:VimToolsScanOptions['output'] == 'vim'
+:	if 'vim' ==? g:VimToolsScanOption_Output
 :		call remote_send("LOG",printf("o%s\e",string(s:VIM[-1])))
-:	elseif g:VimToolsScanOptions['output'] == 'xml'
+:	elseif 'xml' ==? g:VimToolsScanOption_Output
 :		call remote_send("LOG",printf("o%s\e",join(xml,'')))
 :	endif
 :endfunction
@@ -52,8 +55,9 @@
 
 :function! s:FindParent()
 :	let [C, parent] = [s:VIM[-1],'']
-:	for rule in g:VimToolsScanOptions.parent
-:		let i = index(rule, s:VIM[-1].syntax[-1])
+:	if empty(C.syntax) | return -1 | endif
+:	for rule in g:VimToolsScanOption_Relation
+:		let i = index(rule, C.syntax[-1])
 :		if  0 == i | return -1 | endif
 :		if -1 != i | let parent = rule[i-1] | break | endif
 :	endfor
@@ -89,16 +93,18 @@
 :function! s:Work()
 :	let s:Syntax=map(synstack(line("."),col(".")),'synIDattr(v:val,"name")')
 :	call execute("normal yl")
-:	let [s:Position,s:Char,s:File] = [line2byte(line("."))+col(".")-1, @", expand("%:p")]
+:	let [s:Position,s:Char,s:File] = [line2byte(line("."))+col(".")-1, strtrans(0==len(@")?"\n":@"), expand("%:p")]
 :	call s:AddChar(s:Position,s:Char,s:Syntax,s:File)
 :endfunction
 
-:if 0==len(getqflist()) | vimgrep /./g % | endif
+:if 0==len(getqflist()) | vimgrep /\_./g % | endif
+":set virtualedit=onemore
 :silent cdo call s:Work()
 :call s:ReportLast()
+":set virtualedit& 
 
-:if g:VimToolsScanOptions['output'] == 'vim'
-:elseif g:VimToolsScanOptions['output'] == 'xml'
+:if 'vim' ==? g:VimToolsScanOption_Output
+:elseif 'xml' ==? g:VimToolsScanOption_Output
 :	call remote_send("LOG", "ggO<xml>\e")
 :	call remote_send("LOG", "Go</xml>\e")
 :	call remote_send("LOG", ":%!xmllint --format -\n")

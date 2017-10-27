@@ -48,7 +48,8 @@
 :syntax match  xFunctionArgSeparator /,/ contained
 
 
-:let g:VimToolsScanOptions['parent'] = [
+:let g:VimToolsScanOption_Output = 'xml'
+:let g:VimToolsScanOption_Relation = [
 \	['xClassName', 'xPropertyType', 'xPropertyName'],
 \	['xClassName', 'xFunctionReturn', 'xFunctionName', 'xFunctionArgType', 'xFunctionArgName', 'xFunctionArgDefault'],
 \]
