@@ -73,7 +73,7 @@
 :endfunction
 
 :function! s:AddChar(position, char, syntax, file)
-:	if !empty(s:VIM) && s:VIM[-1].last+1 == a:position && s:VIM[-1].file == a:file && s:VIM[-1].syntax == a:syntax
+:	if !empty(s:VIM) && s:VIM[-1].last + strlen(s:VIM[-1].string[-1]) == a:position && s:VIM[-1].file == a:file && s:VIM[-1].syntax == a:syntax
 :		let s:VIM[-1].last    = a:position
 :		let s:VIM[-1].string += [a:char]
 :	else
@@ -107,6 +107,6 @@
 :elseif 'xml' ==? g:VimToolsScanOption_Output
 :	call remote_send("LOG", "ggO<xml>\e")
 :	call remote_send("LOG", "Go</xml>\e")
-:	call remote_send("LOG", ":%!xmllint --format -\n")
+:	call remote_send("LOG", ":%!xmllint --format --encode utf8 -\n")
 :endif
 
