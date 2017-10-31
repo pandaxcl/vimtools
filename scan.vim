@@ -54,19 +54,22 @@
 :endfunction
 
 :function! s:FindParent()
-:	let [C, parent] = [s:VIM[-1],'']
+:	let [C, parents] = [s:VIM[-1],[]]
 :	if empty(C.syntax) | return -1 | endif
+
 :	for rule in g:VimToolsScanOption_Relation
 :		let i = index(rule, C.syntax[-1])
-:		if  0 == i | return -1 | endif
-:		if -1 != i | let parent = rule[i-1] | break | endif
+:		if  0 == i | continue | endif 					" 没有父项目
+:		if -1 != i | let parents += [rule[i-1]] | endif " 有父项目
 :	endfor
-:	if '' == parent | return -1 | endif
+:	call uniq(sort(parents))
+
+:	if empty(parents) | return -1 | endif
 :	let i = -2
 :	while {} !=# get(s:VIM, i, {})
 :		let P = s:VIM[i]
 :		if P.file !=# C.file | break | endif
-:		if P.syntax[-1] ==# parent | return P.id | endif
+:		if 0 != count(parents, P.syntax[-1]) | return P.id | endif
 :		let i -= 1
 :	endwhile
 :	return -1

@@ -51,5 +51,6 @@
 :let g:VimToolsScanOption_Output = 'xml'
 :let g:VimToolsScanOption_Relation = [
 \	['xClassName', 'xPropertyType', 'xPropertyName'],
+\	['xClassName', 'xFunctionReturn', 'xFunctionName', 'xFunctionArgType', 'xFunctionArgName'],
 \	['xClassName', 'xFunctionReturn', 'xFunctionName', 'xFunctionArgType', 'xFunctionArgName', 'xFunctionArgDefault'],
 \]
