@@ -7,12 +7,13 @@
 \		['xClassName', 'xFunctionReturn', 'xFunctionName', 'xFunctionArgType', 'xFunctionArgName', 'xFunctionArgDefault'],
 \	]
 :endif
+:let s:VimToolsScanOption_Relation = {}
 
-:if 0 == count(serverlist(),"LOG")
-:	!mvim --servername LOG
+:if 0 == count(serverlist(),"SCAN_VIM")
+:	!mvim --servername SCAN_VIM
 :	sleep
 :endif
-:call remote_send("LOG",'ggdG')
+:call remote_send("SCAN_VIM",'ggdG')
 
 :function! s:Entity(str)
 :	let tmp = a:str
@@ -35,9 +36,9 @@
 :	let xml += ['</syntax>']
 :	let xml += ['</vim>']
 :	if 'vim' ==? g:VimToolsScanOption_Output
-:		call remote_send("LOG",printf("o%s\e",string(s:VIM[-1])))
+:		call remote_send("SCAN_VIM",printf("o%s\e",string(s:VIM[-1])))
 :	elseif 'xml' ==? g:VimToolsScanOption_Output
-:		call remote_send("LOG",printf("o%s\e",join(xml,'')))
+:		call remote_send("SCAN_VIM",printf("o%s\e",join(xml,'')))
 :	endif
 :endfunction
 
@@ -57,12 +58,14 @@
 :	let [C, parents] = [s:VIM[-1],[]]
 :	if empty(C.syntax) | return -1 | endif
 
-:	for rule in g:VimToolsScanOption_Relation
-:		let i = index(rule, C.syntax[-1])
-:		if  0 == i | continue | endif 					" 没有父项目
-:		if -1 != i | let parents += [rule[i-1]] | endif " 有父项目
-:	endfor
-:	call uniq(sort(parents))
+:	let parents = get(s:VimToolsScanOption_Relation, C.syntax[-1], [])
+
+":	for rule in g:VimToolsScanOption_Relation
+":		let i = index(rule, C.syntax[-1])
+":		if  0 == i | continue | endif 					" 没有父项目
+":		if -1 != i | let parents += [rule[i-1]] | endif " 有父项目
+":	endfor
+":	call uniq(sort(parents))
 
 :	if empty(parents) | return -1 | endif
 :	let i = -2
@@ -93,6 +96,24 @@
 :	endif
 :endfunction
 
+:function! g:ConstructRelation(rules)
+:	let relation = {}
+:	for rule in a:rules
+:		for i in range(len(rule)-1,1,-1)
+:			let [P, C] = [rule[i-1], rule[i]]
+:			if !has_key(relation, C)
+:				let relation[C] = [P]
+:			else
+:				if -1 == index(relation[C], P)
+:					let relation[C] += [P]
+:					call sort(relation[C])
+:				endif
+:			endif
+:		endfor
+:	endfor
+:	return relation
+:endfunction
+
 :function! s:Work()
 :	let s:Syntax=map(synstack(line("."),col(".")),'synIDattr(v:val,"name")')
 :	call execute("normal yl")
@@ -100,16 +121,17 @@
 :	call s:AddChar(s:Position,s:Char,s:Syntax,s:File)
 :endfunction
 
+:let s:VimToolsScanOption_Relation = g:ConstructRelation(g:VimToolsScanOption_Relation)
 :if 0==len(getqflist()) | vimgrep /\_./g % | endif
-":set virtualedit=onemore
+:set virtualedit=onemore
 :silent cdo call s:Work()
 :call s:ReportLast()
-":set virtualedit& 
+:set virtualedit& 
 
 :if 'vim' ==? g:VimToolsScanOption_Output
 :elseif 'xml' ==? g:VimToolsScanOption_Output
-:	call remote_send("LOG", "ggO<xml>\e")
-:	call remote_send("LOG", "Go</xml>\e")
-:	call remote_send("LOG", ":%!xmllint --format --encode utf8 -\n")
+:	call remote_send("SCAN_VIM", "ggO<xml>\e")
+:	call remote_send("SCAN_VIM", "Go</xml>\e")
+:	call remote_send("SCAN_VIM", ":%!xmllint --format --encode utf8 -\n")
 :endif
 
